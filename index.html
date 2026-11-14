@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Germaniyaga viza</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: var(--tg-theme-bg-color, #ffffff);
+    --bg2: var(--tg-theme-secondary-bg-color, #f2f3f5);
+    --text: var(--tg-theme-text-color, #15171a);
+    --hint: var(--tg-theme-hint-color, #8a8f98);
+    --link: var(--tg-theme-link-color, #2481cc);
+    --btn: var(--tg-theme-button-color, #2481cc);
+    --btn-text: var(--tg-theme-button-text-color, #ffffff);
+    --card: var(--tg-theme-section-bg-color, var(--bg));
+    --sep: color-mix(in srgb, var(--hint) 25%, transparent);
+    --ok: #2e9e5b;
+    --warn: #d9822b;
+    --bad: #d64545;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg2); color: var(--text);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg2);
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 8px; }
+  header h1 { font-size: 19px; margin: 0; font-weight: 700; letter-spacing: -.2px; }
+  header .sub { color: var(--hint); font-size: 13px; margin-top: 1px; }
+  .langs { display: flex; background: var(--card); border-radius: 10px; padding: 3px; gap: 2px; }
+  .langs button { border: 0; background: transparent; color: var(--hint); font-weight: 600;
+    font-size: 13px; padding: 5px 10px; border-radius: 8px; cursor: pointer; }
+  .langs button.on { background: var(--btn); color: var(--btn-text); }
+  main { padding: 4px 16px 16px; }
+  section.tab { display: none; }
+  section.tab.on { display: block; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+  .muted { color: var(--hint); font-size: 13px; }
+  .group-title { color: var(--hint); font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .5px; margin: 16px 4px 8px; }
+  /* catalog */
+  .visa { display: flex; gap: 12px; align-items: center; cursor: pointer; }
+  .visa .ico { font-size: 26px; width: 40px; height: 40px; display: grid; place-items: center;
+    background: var(--bg2); border-radius: 12px; flex: none; }
+  .visa .t { font-weight: 600; }
+  .visa .d { color: var(--hint); font-size: 13px; }
+  .visa .chev { margin-left: auto; color: var(--hint); transition: transform .2s; flex: none; }
+  .visa.open .chev { transform: rotate(90deg); }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px;
+    background: color-mix(in srgb, var(--btn) 15%, transparent); color: var(--btn); margin-left: 6px; vertical-align: 1px; }
+  .details { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--sep); }
+  .card.open .details { display: block; }
+  .details h4 { margin: 10px 0 4px; font-size: 13px; color: var(--hint); font-weight: 600; }
+  .details h4:first-child { margin-top: 0; }
+  .details ul { margin: 0; padding-left: 18px; }
+  .details li { margin: 3px 0; }
+  .price { display: flex; justify-content: space-between; align-items: baseline; margin: 12px 0 10px;
+    padding: 10px 12px; background: var(--bg2); border-radius: 10px; }
+  .price b { font-size: 16px; }
+  .btn { display: block; width: 100%; border: 0; border-radius: 12px; padding: 13px; font-size: 15px;
+    font-weight: 600; background: var(--btn); color: var(--btn-text); cursor: pointer; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn.ghost { background: transparent; color: var(--btn); }
+  /* forms */
+  .q { margin-bottom: 14px; }
+  .q:last-child { margin-bottom: 0; }
+  .q label.ql { display: block; font-weight: 600; margin-bottom: 7px; }
+  .q .help { color: var(--hint); font-size: 12.5px; margin: -4px 0 7px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 1.5px solid var(--sep); background: var(--bg); color: var(--text); border-radius: 20px;
+    padding: 7px 12px; font-size: 14px; cursor: pointer; }
+  .chip.on { border-color: var(--btn); background: color-mix(in srgb, var(--btn) 12%, var(--bg)); color: var(--btn); font-weight: 600; }
+  .chips.col { flex-direction: column; }
+  .chips.col .chip { border-radius: 12px; text-align: left; }
+  input.in { width: 100%; border: 1.5px solid var(--sep); background: var(--bg); color: var(--text);
+    border-radius: 12px; padding: 11px 12px; font-size: 15px; outline: none; }
+  input.in:focus { border-color: var(--btn); }
+  .check { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--sep); cursor: pointer; }
+  .check:first-of-type { border-top: 0; }
+  .check input { width: 20px; height: 20px; accent-color: var(--btn); flex: none; margin-top: 1px; }
+  .check .pts { margin-left: auto; color: var(--hint); font-size: 13px; white-space: nowrap; }
+  /* result */
+  .result { text-align: center; }
+  .score { font-size: 44px; font-weight: 800; line-height: 1; margin: 6px 0 2px; }
+  .score small { font-size: 18px; color: var(--hint); font-weight: 600; }
+  .bar { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; margin: 10px 0; }
+  .bar i { display: block; height: 100%; background: var(--btn); border-radius: 4px; transition: width .3s; }
+  .verdict { font-weight: 600; margin-top: 6px; }
+  .verdict.ok { color: var(--ok); } .verdict.warn { color: var(--warn); } .verdict.bad { color: var(--bad); }
+  .note { font-size: 12.5px; color: var(--hint); margin-top: 8px; }
+  .sticky-res { position: sticky; top: 62px; z-index: 4; }
+  /* nav */
+  nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; background: var(--card);
+    border-top: 1px solid var(--sep); padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); }
+  nav button { flex: 1; border: 0; background: transparent; color: var(--hint); font-size: 11.5px;
+    font-weight: 600; padding: 4px 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  nav button span { font-size: 21px; line-height: 1.1; filter: grayscale(1); opacity: .7; }
+  nav button.on { color: var(--btn); }
+  nav button.on span { filter: none; opacity: 1; }
+  .toast { position: fixed; left: 16px; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 20;
+    background: var(--text); color: var(--bg); padding: 11px 14px; border-radius: 12px; font-size: 14px;
+    opacity: 0; transform: translateY(10px); transition: .25s; pointer-events: none; }
+  .toast.on { opacity: 1; transform: none; }
+  .err { color: var(--bad); font-size: 13px; margin-top: 6px; display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🇩🇪 <span data-i="title"></span></h1>
+    <div class="sub" data-i="subtitle"></div>
+  </div>
+  <div class="langs">
+    <button data-lang="uz">UZ</button>
+    <button data-lang="ru">RU</button>
+  </div>
+</header>
+
+<main>
+  <section class="tab" id="tab-catalog">
+    <div class="group-title" data-i="schengen"></div>
+    <div id="cat-c"></div>
+    <div class="group-title" data-i="national"></div>
+    <div id="cat-d"></div>
+    <p class="muted" style="margin:12px 4px" data-i="catNote"></p>
+  </section>
+
+  <section class="tab" id="tab-ball">
+    <div class="card result sticky-res" id="ball-result"></div>
+    <div class="group-title" data-i="baseReq"></div>
+    <div class="card" id="ball-base"></div>
+    <div class="group-title" data-i="pointsTitle"></div>
+    <div class="card" id="ball-points"></div>
+    <button class="btn" id="ball-send" data-i="ballSend"></button>
+    <p class="note" style="margin:10px 4px" data-i="ballNote"></p>
+  </section>
+
+  <section class="tab" id="tab-form">
+    <div class="card" id="form-body"></div>
+    <button class="btn" id="form-send" data-i="formSend"></button>
+    <div class="err" id="form-err"></div>
+    <p class="note" style="margin:10px 4px" data-i="consent"></p>
+  </section>
+</main>
+
+<nav>
+  <button data-tab="catalog"><span>📚</span><b data-i="navCatalog"></b></button>
+  <button data-tab="ball"><span>🧮</span><b data-i="navBall"></b></button>
+  <button data-tab="form"><span>📝</span><b data-i="navForm"></b></button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+const params = new URLSearchParams(location.search);
+
+/* ---------------- texts ---------------- */
+const I = {
+  uz: {
+    title: "Germaniyaga viza", subtitle: "Shengen va milliy vizalar",
+    navCatalog: "Katalog", navBall: "Ball", navForm: "Anketa",
+    schengen: "Shengen viza (C) · 90 kungacha", national: "Milliy viza (D) · 90 kundan ko'p",
+    catNote: "Bu umumiy ma'lumot. Aniq hujjatlar ro'yxati va summalarni elchixona belgilaydi va ular o'zgarib turadi — konsultatsiyada aynan sizning holatingizga mos ro'yxat beramiz.",
+    req: "Asosiy talablar", docs: "Asosiy hujjatlar", pkg: "Hujjat tayyorlash paketi", ask: "kelishiladi",
+    book: "📅 Konsultatsiyaga yozilish", cons: "Konsultatsiya",
+    baseReq: "Asosiy shartlar", pointsTitle: "Ballar (kamida 6 kerak)",
+    ballSend: "📩 Natijani mutaxassisga yuborish",
+    ballNote: "Hisob Germaniya Tashqi ishlar vazirligining Chancenkarte qoidalari (AufenthG § 20a, § 20b) asosida. Yakuniy qarorni elchixona qabul qiladi.",
+    qual: "O'z davlatingizda tan olingan oliy ma'lumot yoki kamida 2 yillik kasbiy ta'lim bormi?",
+    full: "Diplomingiz Germaniyada to'liq tan olinganmi (Anerkennung)?",
+    fullHelp: "To'liq tan olingan bo'lsa, ball kerak emas.",
+    de: "Nemis tili darajangiz", en: "Ingliz tili darajangiz",
+    yes: "Ha", no: "Yo'q", dk: "Bilmayman", none: "Yo'q",
+    partial: "Diplomingiz Germaniyada qisman tan olingan (Teilanerkennung)",
+    exp: "Diplomingiz bo'yicha ish tajribasi",
+    exp0: "2 yildan kam", exp2: "2+ yil (so'nggi 5 yilda)", exp5: "5+ yil (so'nggi 7 yilda)",
+    shortage: "Kasbingiz Germaniyada tanqis (IT, muhandis, shifokor, hamshira, o'qituvchi va h.k.)",
+    age: "Yoshingiz", age0: "35 dan kichik", age1: "35–39", age2: "40 va undan katta",
+    stay: "So'nggi 5 yilda Germaniyada kamida 6 oy qonuniy yashagansiz (turizm hisobga olinmaydi)",
+    spouse: "Turmush o'rtog'ingiz ham Chancenkarte'ga mos va birga topshirasiz",
+    pts: "ball", of6: "/ 6",
+    vFull: "✅ Ballsiz ham mos — diplomingiz to'liq tan olingan",
+    vOk: "✅ Chancenkarte uchun yetarli ball",
+    vNeed: (n) => `Yana ${n} ball kerak`,
+    vNoQual: "❌ Asosiy shart: tan olingan diplom yoki 2+ yillik kasbiy ta'lim kerak",
+    vNoLang: "❌ Kamida nemis tili A1 yoki ingliz tili B2 kerak",
+    fundsNote: "Bundan tashqari Germaniyada yashash xarajatlari uchun moliyaviy kafolat kerak.",
+    formSend: "📩 Anketani yuborish",
+    name: "Ismingiz", namePh: "Masalan: Aziz", phone: "Telefon raqamingiz", phonePh: "+998 90 123 45 67",
+    consent: "🔒 Ma'lumotlaringiz faqat siz bilan bog'lanish va maslahat berish uchun ishlatiladi, uchinchi shaxslarga berilmaydi. Yuborish orqali shunga rozilik bildirasiz.",
+    errFill: "Iltimos, barcha savollarga javob bering.", errPhone: "Telefon raqami noto'g'ri ko'rinadi.",
+    notInTg: "Bu tugma Telegram ichida ishlaydi. Botdagi «📱 Mini ilova» tugmasi orqali oching.",
+    sent: "Yuborildi ✅",
+  },
+  ru: {
+    title: "Визы в Германию", subtitle: "Шенгенские и национальные визы",
+    navCatalog: "Каталог", navBall: "Баллы", navForm: "Анкета",
+    schengen: "Шенгенская виза (C) · до 90 дней", national: "Национальная виза (D) · больше 90 дней",
+    catNote: "Это общая информация. Точный список документов и суммы устанавливает посольство, и они меняются — на консультации дадим список именно под вашу ситуацию.",
+    req: "Основные требования", docs: "Основные документы", pkg: "Пакет подготовки документов", ask: "по договорённости",
+    book: "📅 Записаться на консультацию", cons: "Консультация",
+    baseReq: "Базовые условия", pointsTitle: "Баллы (нужно минимум 6)",
+    ballSend: "📩 Отправить результат специалисту",
+    ballNote: "Расчёт по правилам Chancenkarte МИД Германии (AufenthG § 20a, § 20b). Окончательное решение принимает посольство.",
+    qual: "Есть ли у вас высшее образование или профобразование от 2 лет, признанное в вашей стране?",
+    full: "Ваш диплом полностью признан в Германии (Anerkennung)?",
+    fullHelp: "При полном признании баллы не нужны.",
+    de: "Уровень немецкого", en: "Уровень английского",
+    yes: "Да", no: "Нет", dk: "Не знаю", none: "Нет",
+    partial: "Диплом частично признан в Германии (Teilanerkennung)",
+    exp: "Опыт работы по специальности",
+    exp0: "Меньше 2 лет", exp2: "2+ года (за последние 5 лет)", exp5: "5+ лет (за последние 7 лет)",
+    shortage: "Профессия дефицитная в Германии (IT, инженер, врач, медсестра, учитель и т.д.)",
+    age: "Ваш возраст", age0: "До 35", age1: "35–39", age2: "40 и старше",
+    stay: "За последние 5 лет законно жили в Германии не менее 6 месяцев (туризм не считается)",
+    spouse: "Супруг(а) тоже подходит для Chancenkarte и подаёт вместе с вами",
+    pts: "баллов", of6: "/ 6",
+    vFull: "✅ Подходите без баллов — диплом полностью признан",
+    vOk: "✅ Баллов достаточно для Chancenkarte",
+    vNeed: (n) => `Нужно ещё ${n} балл.`,
+    vNoQual: "❌ Базовое условие: признанный диплом или профобразование от 2 лет",
+    vNoLang: "❌ Нужен минимум немецкий A1 или английский B2",
+    fundsNote: "Также нужно подтверждение средств на проживание в Германии.",
+    formSend: "📩 Отправить анкету",
+    name: "Ваше имя", namePh: "Например: Азиз", phone: "Номер телефона", phonePh: "+998 90 123 45 67",
+    consent: "🔒 Ваши данные используются только для связи с вами и консультации и не передаются третьим лицам. Отправляя анкету, вы соглашаетесь с этим.",
+    errFill: "Пожалуйста, ответьте на все вопросы.", errPhone: "Номер телефона выглядит неверно.",
+    notInTg: "Эта кнопка работает внутри Telegram. Откройте через кнопку «📱 Мини-приложение» в боте.",
+    sent: "Отправлено ✅",
+  },
+};
+
+/* ---------------- visa catalog (indices = bot OPTIONS["visa"]) ---------------- */
+const PRICE_KEYS = ["turistik","biznes","aupair","chancenkarte","ish","ausbildung","oqish","til_kursi","mavsumiy","oila","boshqa"];
+const VISAS = [
+  { i: 0, type: "C", ico: "🏖",
+    uz: { t: "Turistik / mehmon", d: "Sayohat yoki qarindosh-do'stlarni ko'rish",
+      req: ["Safar maqsadi va marshruti aniq", "Safar xarajatlarini qoplaydigan mablag'", "Vataningizga qaytishingizni ko'rsatadigan bog'liqlik: ish, oila, mulk", "Kamida 30 000 € qoplamali tibbiy sug'urta"],
+      docs: ["Pasport (qaytgandan keyin kamida 3 oy amal qiladi)", "Viza anketasi va biometrik foto", "Bank ko'chirmasi, ishdan ma'lumotnoma", "Mehmonxona broni yoki taklifnoma (Verpflichtungserklärung)", "Aviabilet broni, sug'urta polisi"] },
+    ru: { t: "Туристическая / гостевая", d: "Путешествие или визит к родным и друзьям",
+      req: ["Понятная цель и маршрут поездки", "Средства на покрытие расходов поездки", "Связь с родиной, подтверждающая возвращение: работа, семья, имущество", "Медстраховка с покрытием от 30 000 €"],
+      docs: ["Паспорт (действует минимум 3 месяца после возвращения)", "Визовая анкета и биометрическое фото", "Выписка из банка, справка с работы", "Бронь отеля или приглашение (Verpflichtungserklärung)", "Бронь авиабилетов, страховой полис"] } },
+  { i: 1, type: "C", ico: "💼",
+    uz: { t: "Biznes / davolanish", d: "Ish uchrashuvlari, ko'rgazmalar yoki Germaniyada davolanish",
+      req: ["Germaniyadagi kompaniya yoki klinikadan taklif", "Xarajatlarni kim qoplashi aniq ko'rsatilgan", "Vataningizga qaytishingizni ko'rsatadigan bog'liqlik", "Kamida 30 000 € qoplamali tibbiy sug'urta"],
+      docs: ["Pasport, viza anketasi, foto", "Kompaniyaning taklif xati yoki klinika xati va xarajatlar smetasi", "Ish joyingizdan xizmat safari xati", "Bank ko'chirmasi, sug'urta polisi"] },
+    ru: { t: "Бизнес / лечение", d: "Деловые встречи, выставки или лечение в Германии",
+      req: ["Приглашение от компании или клиники в Германии", "Понятно, кто оплачивает расходы", "Связь с родиной, подтверждающая возвращение", "Медстраховка с покрытием от 30 000 €"],
+      docs: ["Паспорт, визовая анкета, фото", "Приглашение компании или письмо клиники со сметой", "Письмо о командировке с работы", "Выписка из банка, страховой полис"] } },
+  { i: 2, type: "D", ico: "👩‍👧",
+    uz: { t: "Au pair", d: "Nemis oilasida yashab, til va madaniyatni o'rganish",
+      req: ["Ariza topshirish paytida 18–26 yosh", "Nemis tili kamida A1", "Mezbon oila bilan shartnoma — oilada nemis tilida gaplashiladi", "Muddat 12 oygacha"],
+      docs: ["Pasport, milliy viza anketasi, foto", "Au pair shartnomasi va oilaning taklif xati", "A1 sertifikati", "Rezyume va motivatsion xat"] },
+    ru: { t: "Au pair", d: "Жизнь в немецкой семье, изучение языка и культуры",
+      req: ["Возраст 18–26 лет на момент подачи", "Немецкий минимум A1", "Договор с принимающей семьёй — в семье говорят по-немецки", "Срок до 12 месяцев"],
+      docs: ["Паспорт, анкета на национальную визу, фото", "Договор au pair и приглашение семьи", "Сертификат A1", "Резюме и мотивационное письмо"] } },
+  { i: 3, type: "D", ico: "🔎",
+    uz: { t: "Chancenkarte", d: "Germaniyada 1 yilgacha ish qidirish",
+      req: ["O'z davlatingizda tan olingan oliy ma'lumot yoki kamida 2 yillik kasbiy ta'lim", "Nemis tili A1 yoki ingliz tili B2", "Kamida 6 ball — diplom to'liq tan olingan bo'lsa, ballsiz", "Yashash xarajatlari uchun moliyaviy kafolat"],
+      docs: ["Pasport, milliy viza anketasi, foto", "Diplom va uning ilovasi", "Til sertifikati", "Ish tajribasini tasdiqlovchi hujjatlar", "Moliyaviy kafolat va sug'urta"] },
+    ru: { t: "Chancenkarte", d: "Поиск работы в Германии до 1 года",
+      req: ["Высшее образование или профобразование от 2 лет, признанное в вашей стране", "Немецкий A1 или английский B2", "Минимум 6 баллов — при полном признании диплома без баллов", "Подтверждение средств на проживание"],
+      docs: ["Паспорт, анкета на национальную визу, фото", "Диплом с приложением", "Языковой сертификат", "Документы об опыте работы", "Финансовые гарантии и страховка"] } },
+  { i: 4, type: "D", ico: "🛠",
+    uz: { t: "Ish / Blue Card", d: "Germaniyadagi ish beruvchidan aniq taklif bor",
+      req: ["Ish beruvchi bilan mehnat shartnomasi yoki ish taklifi", "Ko'p hollarda diplom yoki kasbiy malaka Germaniyada tan olingan bo'lishi kerak", "Blue Card uchun — oliy ma'lumot va belgilangan minimal maosh", "Ko'pincha Federal mehnat agentligi (BA) roziligi"],
+      docs: ["Pasport, milliy viza anketasi, foto", "Mehnat shartnomasi", "Diplom va tan olinganlik hujjati (Anerkennung / ZAB)", "Rezyume va ish tajribasi hujjatlari"] },
+    ru: { t: "Работа / Blue Card", d: "Есть конкретное предложение от работодателя в Германии",
+      req: ["Трудовой договор или предложение о работе", "Во многих случаях диплом или квалификация должны быть признаны в Германии", "Для Blue Card — высшее образование и установленная минимальная зарплата", "Часто нужно согласие Федерального агентства занятости (BA)"],
+      docs: ["Паспорт, анкета на национальную визу, фото", "Трудовой договор", "Диплом и документ о признании (Anerkennung / ZAB)", "Резюме и документы об опыте работы"] } },
+  { i: 5, type: "D", ico: "🧑‍🔧",
+    uz: { t: "Ausbildung", d: "Germaniyada kasb o'rganish va o'qish davomida maosh olish",
+      req: ["Germaniya korxonasi bilan Ausbildung shartnomasi", "Odatda nemis tili B1", "Maktab attestati (ba'zan tan olinishi kerak)", "Maosh yetmasa — qo'shimcha moliyaviy kafolat"],
+      docs: ["Pasport, milliy viza anketasi, foto", "Ausbildung shartnomasi", "B1 sertifikati", "Attestat va tarjimasi, rezyume, motivatsion xat"] },
+    ru: { t: "Ausbildung", d: "Профобучение в Германии с зарплатой во время учёбы",
+      req: ["Договор на Ausbildung с немецким предприятием", "Обычно немецкий B1", "Школьный аттестат (иногда нужно признание)", "Если зарплаты не хватает — дополнительные финансовые гарантии"],
+      docs: ["Паспорт, анкета на национальную визу, фото", "Договор на Ausbildung", "Сертификат B1", "Аттестат с переводом, резюме, мотивационное письмо"] } },
+  { i: 6, type: "D", ico: "🎓",
+    uz: { t: "O'qish (universitet)", d: "Germaniya universitetida bakalavr yoki magistratura",
+      req: ["Universitetdan qabul xati (Zulassung)", "O'qish tili bo'yicha sertifikat — nemis yoki ingliz", "Yashash xarajatlari uchun bloklangan hisob (Sperrkonto)", "Tibbiy sug'urta"],
+      docs: ["Pasport, milliy viza anketasi, foto", "Qabul xati", "Diplom yoki attestat va ilovasi", "Til sertifikati", "Sperrkonto tasdig'i, motivatsion xat"] },
+    ru: { t: "Учёба (университет)", d: "Бакалавриат или магистратура в Германии",
+      req: ["Письмо о зачислении из университета (Zulassung)", "Сертификат языка обучения — немецкий или английский", "Блокированный счёт на проживание (Sperrkonto)", "Медицинская страховка"],
+      docs: ["Паспорт, анкета на национальную визу, фото", "Письмо о зачислении", "Диплом или аттестат с приложением", "Языковой сертификат", "Подтверждение Sperrkonto, мотивационное письмо"] } },
+  { i: 7, type: "D", ico: "📚",
+    uz: { t: "Til kursi", d: "Germaniyada 3 oydan uzoq intensiv nemis tili kursi",
+      req: ["Intensiv kursga yozilish (odatda haftasiga kamida 18 soat)", "Kurs to'lovi to'langan", "Yashash xarajatlari uchun mablag'", "Kursdan keyingi rejangiz aniq"],
+      docs: ["Pasport, milliy viza anketasi, foto", "Kurs tasdig'i va to'lov kvitansiyasi", "Bloklangan hisob yoki moliyaviy kafolat", "Sug'urta, motivatsion xat"] },
+    ru: { t: "Языковые курсы", d: "Интенсивный курс немецкого в Германии дольше 3 месяцев",
+      req: ["Запись на интенсивный курс (обычно от 18 часов в неделю)", "Оплаченный курс", "Средства на проживание", "Понятные планы после курса"],
+      docs: ["Паспорт, анкета на национальную визу, фото", "Подтверждение курса и квитанция об оплате", "Блокированный счёт или финансовые гарантии", "Страховка, мотивационное письмо"] } },
+  { i: 8, type: "D", ico: "🌾",
+    uz: { t: "Mavsumiy ish", d: "Qishloq xo'jaligi va boshqa mavsumiy ishlar",
+      req: ["Germaniya ish beruvchisi bilan mehnat shartnomasi", "Federal mehnat agentligi (BA) ruxsati", "Faqat rasmiy dasturlar va litsenziyali agentliklar orqali", "Mavsum tugagach vataningizga qaytish"],
+      docs: ["Pasport, viza anketasi, foto", "Mehnat shartnomasi va BA ruxsati", "Tibbiy sug'urta", "Turar joy haqida ma'lumot"] },
+    ru: { t: "Сезонная работа", d: "Сельское хозяйство и другие сезонные работы",
+      req: ["Трудовой договор с работодателем в Германии", "Разрешение Федерального агентства занятости (BA)", "Только через официальные программы и лицензированные агентства", "Возвращение на родину после сезона"],
+      docs: ["Паспорт, визовая анкета, фото", "Трудовой договор и разрешение BA", "Медицинская страховка", "Информация о жилье"] } },
+  { i: 9, type: "D", ico: "👨‍👩‍👧",
+    uz: { t: "Oila birlashuvi", d: "Germaniyada yashovchi turmush o'rtog'ingiz yoki ota-onangiz oldiga",
+      req: ["Rasmiy nikoh yoki qarindoshlik", "Turmush o'rtoq uchun odatda nemis tili A1 (istisnolar bor)", "Germaniyadagi oila a'zosining yashash ruxsati", "Yetarli turar joy va daromad"],
+      docs: ["Pasport, milliy viza anketasi, foto", "Nikoh yoki tug'ilganlik guvohnomasi — tasdiqlangan va tarjima qilingan", "A1 sertifikati", "Germaniyadagi oila a'zosining hujjatlari"] },
+    ru: { t: "Воссоединение семьи", d: "К супругу(е) или родителям, живущим в Германии",
+      req: ["Официальный брак или родство", "Для супруга(и) обычно немецкий A1 (есть исключения)", "Вид на жительство члена семьи в Германии", "Достаточное жильё и доход"],
+      docs: ["Паспорт, анкета на национальную визу, фото", "Свидетельство о браке или рождении — заверенное и переведённое", "Сертификат A1", "Документы члена семьи в Германии"] } },
+];
+
+/* ---------------- anketa options (must match bot.py OPTIONS order) ---------------- */
+const OPT = {
+  visa: { uz: ["🏖 Turistik / mehmon (Shengen)","💼 Biznes / davolanish (Shengen)","👩‍👧 Au pair","🔎 Chancenkarte (ish qidirish)","🛠 Ishga taklif bor / Blue Card","🧑‍🔧 Ausbildung (kasbiy ta'lim)","🎓 O'qish (universitet)","📚 Til kursi","🌾 Mavsumiy ish","👨‍👩‍👧 Oila birlashuvi","❓ Boshqa / bilmayman"],
+          ru: ["🏖 Туристическая / гостевая (Шенген)","💼 Бизнес / лечение (Шенген)","👩‍👧 Au pair","🔎 Chancenkarte (поиск работы)","🛠 Есть предложение о работе / Blue Card","🧑‍🔧 Ausbildung (проф. обучение)","🎓 Учёба (университет)","📚 Языковые курсы","🌾 Сезонная работа","👨‍👩‍👧 Воссоединение семьи","❓ Другое / не знаю"] },
+  age: { uz: ["18 dan kichik","18–26","27–34","35–39","40 va undan katta"], ru: ["До 18","18–26","27–34","35–39","40 и старше"] },
+  german: { uz: ["Bilmayman","A1","A2","B1","B2 va yuqori"], ru: ["Не знаю","A1","A2","B1","B2 и выше"] },
+  english: { uz: ["Bilmayman / A1–A2","B1","B2 va yuqori"], ru: ["Не знаю / A1–A2","B1","B2 и выше"] },
+  edu: { uz: ["Maktab","Kollej / kasbiy ta'lim (2+ yil)","Bakalavr","Magistr va yuqori"], ru: ["Школа","Колледж / проф. образование (2+ года)","Бакалавр","Магистр и выше"] },
+  when: { uz: ["1 oy ichida","1–3 oy ichida","3–6 oy ichida","Hali aniq emas"], ru: ["В течение месяца","Через 1–3 месяца","Через 3–6 месяцев","Пока не знаю"] },
+  refusal: { uz: ["Yo'q","Ha, Germaniyadan","Ha, boshqa davlatdan"], ru: ["Нет","Да, от Германии","Да, от другой страны"] },
+};
+const QTXT = {
+  visa: { uz: "Qaysi viza turi kerak?", ru: "Какая виза вам нужна?" },
+  age: { uz: "Yoshingiz", ru: "Ваш возраст" },
+  german: { uz: "Nemis tili darajangiz", ru: "Уровень немецкого" },
+  english: { uz: "Ingliz tili darajangiz", ru: "Уровень английского" },
+  edu: { uz: "Ma'lumotingiz", ru: "Образование" },
+  when: { uz: "Qachon ketmoqchisiz?", ru: "Когда планируете поездку?" },
+  refusal: { uz: "Oldin viza rad etilganmi?", ru: "Были ли отказы в визе?" },
+};
+const STEPS = ["visa","age","german","english","edu","when","refusal"];
+const needed = (k, a) => k !== "english" || (a.visa === 3 && a.german === 0);
+
+/* ---------------- state ---------------- */
+const tgLang = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code;
+let lang = params.get("lang") || (tgLang === "ru" ? "ru" : "uz");
+if (!I[lang]) lang = "uz";
+let tab = ["catalog","ball","form"].includes(params.get("tab")) ? params.get("tab") : "catalog";
+const prices = {};
+(params.get("p") || "").split(",").forEach(kv => { const [k, v] = kv.split("."); if (k && +v > 0) prices[k] = +v; });
+const ball = { qual: null, full: null, de: 0, en: 0, partial: false, exp: 0, shortage: false, age: 0, stay: false, spouse: false };
+const form = { name: "", phone: "", a: {} };
+if (params.get("v") !== null && OPT.visa.uz[+params.get("v")]) form.a.visa = +params.get("v");
+const openCards = new Set();
+
+const t = (k) => I[lang][k];
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (n) => n ? n.toLocaleString("ru-RU").replace(/ /g, " ") + (lang === "ru" ? " сум" : " so'm") : t("ask");
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("on");
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2600);
+}
+function haptic(kind) { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch (e) {} }
+
+function send(payload) {
+  payload.lang = lang;
+  const data = JSON.stringify(payload);
+  if (tg && tg.initData !== undefined && tg.sendData && tg.platform !== "unknown") {
+    try { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+    tg.sendData(data);           // bot oladi, mini ilova yopiladi
+  } else {
+    console.log("sendData", data);
+    window.__lastSend = payload;
+    toast(t("notInTg"));
+  }
+}
+
+/* ---------------- catalog ---------------- */
+function renderCatalog() {
+  const cons = prices.konsultatsiya;
+  const html = (v) => {
+    const x = v[lang];
+    return `<div class="card ${openCards.has(v.i) ? "open" : ""}" data-v="${v.i}">
+      <div class="visa ${openCards.has(v.i) ? "open" : ""}">
+        <div class="ico">${v.ico}</div>
+        <div><div class="t">${esc(x.t)}<span class="badge">${v.type}</span></div><div class="d">${esc(x.d)}</div></div>
+        <div class="chev">›</div>
+      </div>
+      <div class="details">
+        <h4>${t("req")}</h4><ul>${x.req.map(r => `<li>${esc(r)}</li>`).join("")}</ul>
+        <h4>${t("docs")}</h4><ul>${x.docs.map(r => `<li>${esc(r)}</li>`).join("")}</ul>
+        <div class="price"><span>${t("pkg")}</span><b>${fmt(prices[PRICE_KEYS[v.i]])}</b></div>
+        <button class="btn" data-book="${v.i}">${t("book")}${cons ? " · " + fmt(cons) : ""}</button>
+      </div></div>`;
+  };
+  document.getElementById("cat-c").innerHTML = VISAS.filter(v => v.type === "C").map(html).join("");
+  document.getElementById("cat-d").innerHTML = VISAS.filter(v => v.type === "D").map(html).join("");
+}
+document.getElementById("tab-catalog").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-book]");
+  if (b) { send({ t: "book", v: +b.dataset.book }); return; }
+  const card = e.target.closest(".card[data-v]");
+  if (!card) return;
+  const i = +card.dataset.v;
+  openCards.has(i) ? openCards.delete(i) : openCards.add(i);
+  haptic(); renderCatalog();
+});
+
+/* ---------------- points calculator ---------------- */
+function chips(name, items, val, col) {
+  return `<div class="chips ${col ? "col" : ""}">${items.map(([v, label]) =>
+    `<button class="chip ${val === v ? "on" : ""}" data-k="${name}" data-val="${v}">${esc(label)}</button>`).join("")}</div>`;
+}
+function calcBall() {
+  const p = [];
+  if (ball.partial) p.push(["partial", 4]);
+  const de = [0, 0, 1, 2, 3][ball.de]; if (de) p.push(["de", de]);
+  if (ball.en === 3) p.push(["enC1", 1]);
+  const ex = [0, 2, 3][ball.exp]; if (ex) p.push(["exp", ex]);
+  if (ball.shortage) p.push(["shortage", 1]);
+  const ag = [2, 1, 0][ball.age]; if (ag) p.push(["age", ag]);
+  if (ball.stay) p.push(["stay", 1]);
+  if (ball.spouse) p.push(["spouse", 1]);
+  const points = p.reduce((s, [, n]) => s + n, 0);
+  const langOk = ball.de >= 1 || ball.en >= 2;
+  let status;
+  if (ball.qual === false) status = "noQual";
+  else if (ball.full === true) status = "full";
+  else if (!langOk) status = "noLang";
+  else status = points >= 6 ? "ok" : "need";
+  return { points, parts: p, status, langOk };
+}
+function renderBall() {
+  const r = calcBall();
+  const cls = { ok: "ok", full: "ok", need: "warn", noQual: "bad", noLang: "bad" }[r.status];
+  const verdict = { ok: t("vOk"), full: t("vFull"), need: t("vNeed")(Math.max(0, 6 - r.points)), noQual: t("vNoQual"), noLang: t("vNoLang") }[r.status];
+  document.getElementById("ball-result").innerHTML = `
+    <div class="score">${r.points} <small>${t("of6")} ${t("pts")}</small></div>
+    <div class="bar"><i style="width:${Math.min(100, r.points / 6 * 100)}%"></i></div>
+    <div class="verdict ${cls}">${verdict}</div>
+    ${r.status === "ok" || r.status === "full" ? `<div class="note">${t("fundsNote")}</div>` : ""}`;
+
+  const yn = [[true, t("yes")], [false, t("no")]];
+  document.getElementById("ball-base").innerHTML = `
+    <div class="q"><label class="ql">${t("qual")}</label>${chips("qual", yn, ball.qual)}</div>
+    <div class="q"><label class="ql">${t("full")}</label><div class="help">${t("fullHelp")}</div>${chips("full", [[true, t("yes")], [false, t("no")], ["dk", t("dk")]], ball.full)}</div>
+    <div class="q"><label class="ql">${t("de")}</label>${chips("de", [[0, t("none")], [1, "A1"], [2, "A2"], [3, "B1"], [4, "B2+"]], ball.de)}</div>
+    <div class="q"><label class="ql">${t("en")}</label>${chips("en", [[0, t("none")], [1, "A1–B1"], [2, "B2"], [3, "C1+"]], ball.en)}</div>`;
+
+  const ck = (k, label, pts) => `<label class="check"><input type="checkbox" data-ck="${k}" ${ball[k] ? "checked" : ""}><span>${esc(label)}</span><span class="pts">+${pts}</span></label>`;
+  document.getElementById("ball-points").innerHTML = `
+    <div class="q"><label class="ql">${t("exp")}</label>${chips("exp", [[0, t("exp0")], [1, t("exp2") + " · +2"], [2, t("exp5") + " · +3"]], ball.exp, true)}</div>
+    <div class="q"><label class="ql">${t("age")}</label>${chips("age", [[0, t("age0") + " · +2"], [1, t("age1") + " · +1"], [2, t("age2")]], ball.age)}</div>
+    ${ck("partial", t("partial"), 4)}
+    ${ck("shortage", t("shortage"), 1)}
+    ${ck("stay", t("stay"), 1)}
+    ${ck("spouse", t("spouse"), 1)}`;
+  document.getElementById("ball-send").disabled = ball.qual === null;
+}
+document.getElementById("tab-ball").addEventListener("click", (e) => {
+  const c = e.target.closest(".chip[data-k]");
+  if (c) {
+    const raw = c.dataset.val;
+    ball[c.dataset.k] = raw === "true" ? true : raw === "false" ? false : raw === "dk" ? "dk" : +raw;
+    haptic(); renderBall();
+  }
+});
+document.getElementById("tab-ball").addEventListener("change", (e) => {
+  const k = e.target.dataset.ck; if (!k) return;
+  ball[k] = e.target.checked; haptic(); renderBall();
+});
+document.getElementById("ball-send").addEventListener("click", () => {
+  const r = calcBall();
+  send({ t: "ball", p: r.points, s: r.status,
+    b: { q: ball.qual, f: ball.full, de: ball.de, en: ball.en, pa: ball.partial, ex: ball.exp, sh: ball.shortage, ag: ball.age, st: ball.stay, sp: ball.spouse } });
+});
+
+/* ---------------- anketa ---------------- */
+function renderForm() {
+  const a = form.a;
+  let h = `<div class="q"><label class="ql">${t("name")}</label><input class="in" id="f-name" maxlength="60" placeholder="${t("namePh")}" value="${esc(form.name)}"></div>`;
+  STEPS.forEach(k => {
+    if (!needed(k, a)) return;
+    h += `<div class="q"><label class="ql">${esc(QTXT[k][lang])}</label>${chips("f-" + k, OPT[k][lang].map((l, i) => [i, l]), a[k], k === "visa")}</div>`;
+  });
+  h += `<div class="q"><label class="ql">${t("phone")}</label><input class="in" id="f-phone" type="tel" inputmode="tel" placeholder="${t("phonePh")}" value="${esc(form.phone)}"></div>`;
+  document.getElementById("form-body").innerHTML = h;
+}
+document.getElementById("tab-form").addEventListener("click", (e) => {
+  const c = e.target.closest(".chip[data-k]");
+  if (!c) return;
+  const k = c.dataset.k.slice(2);
+  form.a[k] = +c.dataset.val;
+  if (!needed("english", form.a)) delete form.a.english;
+  haptic(); renderForm();
+  document.getElementById("form-err").style.display = "none";
+});
+document.getElementById("tab-form").addEventListener("input", (e) => {
+  if (e.target.id === "f-name") form.name = e.target.value;
+  if (e.target.id === "f-phone") form.phone = e.target.value;
+});
+document.getElementById("form-send").addEventListener("click", () => {
+  const err = document.getElementById("form-err");
+  const missing = !form.name.trim() || STEPS.some(k => needed(k, form.a) && form.a[k] === undefined);
+  const digits = form.phone.replace(/\D/g, "");
+  if (missing) { err.textContent = t("errFill"); err.style.display = "block"; return; }
+  if (digits.length < 9 || digits.length > 15) { err.textContent = t("errPhone"); err.style.display = "block"; return; }
+  err.style.display = "none";
+  send({ t: "anketa", n: form.name.trim().slice(0, 60), ph: form.phone.trim().slice(0, 25), a: form.a });
+});
+
+/* ---------------- shell ---------------- */
+function renderAll() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i]").forEach(el => { const v = I[lang][el.dataset.i]; if (typeof v === "string") el.textContent = v; });
+  document.querySelectorAll(".langs button").forEach(b => b.classList.toggle("on", b.dataset.lang === lang));
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + tab));
+  renderCatalog(); renderBall(); renderForm();
+}
+document.querySelector(".langs").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-lang]"); if (!b) return;
+  lang = b.dataset.lang; haptic(); renderAll();
+});
+document.querySelector("nav").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-tab]"); if (!b) return;
+  tab = b.dataset.tab; haptic(); renderAll(); window.scrollTo(0, 0);
+});
+
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+renderAll();
+</script>
+</body>
+</html>
