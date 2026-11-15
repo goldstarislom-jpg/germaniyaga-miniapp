@@ -103,6 +103,25 @@
     background: var(--text); color: var(--bg); padding: 11px 14px; border-radius: 12px; font-size: 14px;
     opacity: 0; transform: translateY(10px); transition: .25s; pointer-events: none; }
   .toast.on { opacity: 1; transform: none; }
+  .search { position: relative; margin: 6px 0 10px; }
+  .search input { padding-left: 36px; }
+  .search span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--hint); }
+  .chips.scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 10px; padding: 0 16px; }
+  .chips.scroll::-webkit-scrollbar { display: none; }
+  .chips.scroll .chip { white-space: nowrap; }
+  .job .t { font-weight: 700; font-size: 16px; line-height: 1.3; }
+  .job .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 2px; }
+  .tag { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 7px; background: var(--bg2); color: var(--hint); }
+  .tag.t-ausbildung { background: color-mix(in srgb, #2e9e5b 14%, transparent); color: #2e9e5b; }
+  .tag.t-vollzeit { background: color-mix(in srgb, var(--btn) 14%, transparent); color: var(--btn); }
+  .tag.t-saison { background: color-mix(in srgb, #d9822b 16%, transparent); color: #c4721f; }
+  .tag.t-teilzeit { background: color-mix(in srgb, #8e5bd6 14%, transparent); color: #8e5bd6; }
+  .job .sal { font-weight: 700; margin-top: 6px; }
+  .job .date { color: var(--hint); font-size: 12px; margin-top: 4px; }
+  .job .desc { white-space: pre-wrap; margin: 10px 0; }
+  .job .src { font-size: 13px; color: var(--hint); word-break: break-all; margin-bottom: 10px; }
+  .warnbox { font-size: 12.5px; color: var(--hint); background: var(--bg2); border-radius: 10px; padding: 9px 11px; margin-bottom: 10px; }
+  .empty { text-align: center; color: var(--hint); padding: 30px 10px; }
   .err { color: var(--bad); font-size: 13px; margin-top: 6px; display: none; }
 </style>
 </head>
@@ -119,6 +138,12 @@
 </header>
 
 <main>
+  <section class="tab" id="tab-jobs">
+    <div class="search"><span>🔍</span><input class="in" id="job-q" type="search" autocomplete="off"></div>
+    <div class="chips scroll" id="job-filters"></div>
+    <div id="job-list"></div>
+  </section>
+
   <section class="tab" id="tab-catalog">
     <div class="group-title" data-i="schengen"></div>
     <div id="cat-c"></div>
@@ -146,6 +171,7 @@
 </main>
 
 <nav>
+  <button data-tab="jobs"><span>💼</span><b data-i="navJobs"></b></button>
   <button data-tab="catalog"><span>📚</span><b data-i="navCatalog"></b></button>
   <button data-tab="ball"><span>🧮</span><b data-i="navBall"></b></button>
   <button data-tab="form"><span>📝</span><b data-i="navForm"></b></button>
@@ -159,8 +185,15 @@ const params = new URLSearchParams(location.search);
 /* ---------------- texts ---------------- */
 const I = {
   uz: {
-    title: "Germaniyaga viza", subtitle: "Shengen va milliy vizalar",
-    navCatalog: "Katalog", navBall: "Ball", navForm: "Anketa",
+    title: "Germaniyaga viza", subtitle: "Ishlar, vizalar va maslahat",
+    navJobs: "Ishlar", navCatalog: "Vizalar",
+    jobSearch: "Kasb yoki shahar…", all: "Hammasi",
+    jobEmpty: "Hozircha vakansiya yo'q. Botda «🔔 Obuna» bosing — yangisi chiqishi bilan xabar beramiz.",
+    jobNone: "Hech narsa topilmadi.",
+    jobLang: "Nemis tili", jobNoLang: "Til talab qilinmaydi",
+    jobConsult: "📅 Viza bo'yicha konsultatsiya", jobSrc: "Manba",
+    jobWarn: "ℹ️ E'lon ma'lumot uchun. Biz ishga joylashtirmaymiz — viza va hujjatlar bo'yicha konsultatsiya beramiz. Hech kimga \"ish topib berish\" uchun oldindan pul to'lamang.",
+    vt: { vollzeit: "Vollzeit", ausbildung: "Ausbildung", saison: "Mavsumiy", teilzeit: "Teilzeit" }, navBall: "Ball", navForm: "Anketa",
     schengen: "Shengen viza (C) · 90 kungacha", national: "Milliy viza (D) · 90 kundan ko'p",
     catNote: "Bu umumiy ma'lumot. Aniq hujjatlar ro'yxati va summalarni elchixona belgilaydi va ular o'zgarib turadi — konsultatsiyada aynan sizning holatingizga mos ro'yxat beramiz.",
     req: "Asosiy talablar", docs: "Asosiy hujjatlar", pkg: "Hujjat tayyorlash paketi", ask: "kelishiladi",
@@ -195,8 +228,15 @@ const I = {
     sent: "Yuborildi ✅",
   },
   ru: {
-    title: "Визы в Германию", subtitle: "Шенгенские и национальные визы",
-    navCatalog: "Каталог", navBall: "Баллы", navForm: "Анкета",
+    title: "Визы в Германию", subtitle: "Работа, визы и консультации",
+    navJobs: "Работа", navCatalog: "Визы",
+    jobSearch: "Профессия или город…", all: "Все",
+    jobEmpty: "Пока нет вакансий. Нажмите «🔔 Подписаться» в боте — сообщим, как только появится новая.",
+    jobNone: "Ничего не найдено.",
+    jobLang: "Немецкий", jobNoLang: "Язык не требуется",
+    jobConsult: "📅 Консультация по визе", jobSrc: "Источник",
+    jobWarn: "ℹ️ Объявление дано для информации. Мы не занимаемся трудоустройством — консультируем по визам и документам. Никому не платите заранее «за трудоустройство».",
+    vt: { vollzeit: "Vollzeit", ausbildung: "Ausbildung", saison: "Сезонная", teilzeit: "Teilzeit" }, navBall: "Баллы", navForm: "Анкета",
     schengen: "Шенгенская виза (C) · до 90 дней", national: "Национальная виза (D) · больше 90 дней",
     catNote: "Это общая информация. Точный список документов и суммы устанавливает посольство, и они меняются — на консультации дадим список именно под вашу ситуацию.",
     req: "Основные требования", docs: "Основные документы", pkg: "Пакет подготовки документов", ask: "по договорённости",
@@ -334,7 +374,7 @@ const needed = (k, a) => k !== "english" || (a.visa === 3 && a.german === 0);
 const tgLang = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code;
 let lang = params.get("lang") || (tgLang === "ru" ? "ru" : "uz");
 if (!I[lang]) lang = "uz";
-let tab = ["catalog","ball","form"].includes(params.get("tab")) ? params.get("tab") : "catalog";
+let tab = ["jobs","catalog","ball","form"].includes(params.get("tab")) ? params.get("tab") : "jobs";
 const prices = {};
 (params.get("p") || "").split(",").forEach(kv => { const [k, v] = kv.split("."); if (k && +v > 0) prices[k] = +v; });
 const ball = { qual: null, full: null, de: 0, en: 0, partial: false, exp: 0, shortage: false, age: 0, stay: false, spouse: false };
@@ -500,6 +540,76 @@ document.getElementById("form-send").addEventListener("click", () => {
   send({ t: "anketa", n: form.name.trim().slice(0, 60), ph: form.phone.trim().slice(0, 25), a: form.a });
 });
 
+/* ---------------- jobs ---------------- */
+const JOB_VISA = { vollzeit: 4, teilzeit: 4, ausbildung: 5, saison: 8 };
+let jobs = null, jq = "", jt = "all";
+const openJobs = new Set();
+async function loadJobs() {
+  try {
+    const r = await fetch("vakansiyalar.json?t=" + Date.now(), { cache: "no-store" });
+    jobs = r.ok ? await r.json() : [];
+  } catch (e) { jobs = []; }
+  if (!Array.isArray(jobs)) jobs = [];
+  jobs = jobs.filter(j => j && j.title).reverse();
+  renderJobs();
+}
+function renderJobFilters() {
+  const types = ["all", "vollzeit", "ausbildung", "saison", "teilzeit"];
+  document.getElementById("job-filters").innerHTML = types.map(k => {
+    const n = jobs ? (k === "all" ? jobs.length : jobs.filter(j => j.type === k).length) : "";
+    return `<button class="chip ${jt === k ? "on" : ""}" data-jt="${k}">${esc(k === "all" ? t("all") : t("vt")[k])}${n !== "" ? " · " + n : ""}</button>`;
+  }).join("");
+}
+function renderJobs() {
+  document.getElementById("job-q").placeholder = t("jobSearch");
+  renderJobFilters();
+  const box = document.getElementById("job-list");
+  if (jobs === null) { box.innerHTML = `<div class="empty">…</div>`; return; }
+  if (!jobs.length) { box.innerHTML = `<div class="empty">${esc(t("jobEmpty"))}</div>`; return; }
+  const q = jq.trim().toLowerCase();
+  const list = jobs.filter(j => (jt === "all" || j.type === jt) &&
+    (!q || [j.title, j.city, j.desc].join(" ").toLowerCase().includes(q)));
+  if (!list.length) { box.innerHTML = `<div class="empty">${esc(t("jobNone"))}</div>`; return; }
+  const LV = ["", "A1", "A2", "B1", "B2", "C1"];
+  box.innerHTML = list.map(j => {
+    const open = openJobs.has(j.id);
+    const lv = LV[j.lang] ? `${t("jobLang")} ${LV[j.lang]}` : t("jobNoLang");
+    return `<div class="card job ${open ? "open" : ""}" data-job="${j.id}">
+      <div class="t">${esc(j.title)}</div>
+      <div class="meta">
+        <span class="tag t-${esc(j.type)}">${esc((t("vt")[j.type]) || j.type)}</span>
+        ${j.city ? `<span class="tag">📍 ${esc(j.city)}</span>` : ""}
+        <span class="tag">🗣 ${esc(lv)}</span>
+      </div>
+      ${j.salary ? `<div class="sal">💶 ${esc(j.salary)}</div>` : ""}
+      ${j.date ? `<div class="date">${esc(j.date)}</div>` : ""}
+      <div class="details">
+        ${j.desc ? `<div class="desc">${esc(j.desc)}</div>` : ""}
+        ${j.src ? `<div class="src">🔗 ${t("jobSrc")}: ${esc(j.src)}</div>` : ""}
+        <div class="warnbox">${esc(t("jobWarn"))}</div>
+        <button class="btn" data-jbook="${j.id}">${t("jobConsult")}</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+document.getElementById("job-q").addEventListener("input", (e) => { jq = e.target.value; renderJobs(); });
+document.getElementById("job-filters").addEventListener("click", (e) => {
+  const c = e.target.closest("[data-jt]"); if (!c) return;
+  jt = c.dataset.jt; haptic(); renderJobs();
+});
+document.getElementById("job-list").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-jbook]");
+  if (b) {
+    const j = jobs.find(x => String(x.id) === b.dataset.jbook);
+    if (j) send({ t: "book", v: JOB_VISA[j.type] ?? 4, vt: String(j.title).slice(0, 100) });
+    return;
+  }
+  const card = e.target.closest("[data-job]"); if (!card) return;
+  const id = +card.dataset.job;
+  openJobs.has(id) ? openJobs.delete(id) : openJobs.add(id);
+  haptic(); renderJobs();
+});
+
 /* ---------------- shell ---------------- */
 function renderAll() {
   document.documentElement.lang = lang;
@@ -507,7 +617,7 @@ function renderAll() {
   document.querySelectorAll(".langs button").forEach(b => b.classList.toggle("on", b.dataset.lang === lang));
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
   document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + tab));
-  renderCatalog(); renderBall(); renderForm();
+  renderCatalog(); renderBall(); renderForm(); renderJobs();
 }
 document.querySelector(".langs").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-lang]"); if (!b) return;
@@ -520,6 +630,7 @@ document.querySelector("nav").addEventListener("click", (e) => {
 
 if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
 renderAll();
+loadJobs();
 </script>
 </body>
 </html>
